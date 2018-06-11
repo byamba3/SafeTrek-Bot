@@ -1,24 +1,23 @@
 {
-  "name": "safetrek-bot",
+  "name": "hello-chatconnector",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/byamba3/SafeTrek-Bot.git"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "azure-publish": "node publish.js"
   },
   "author": "",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/byamba3/SafeTrek-Bot/issues"
-  },
-  "homepage": "https://github.com/byamba3/SafeTrek-Bot#readme",
   "dependencies": {
-    "botbuilder": "^3.15.0",
+    "botbuilder": "^3.12.0",
+    "botbuilder-azure": "^3.0.0",
+    "restify": "^5.0.0",
+    "request": "^2.81.0"
+  },
+  "devDependencies": {
     "request": "^2.81.0",
-    "restify": "^5.2.1"
+    "restify": "^5.0.0",
+    "zip-folder": "^1.0.0"
   }
 }
