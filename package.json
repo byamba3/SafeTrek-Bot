@@ -1,0 +1,24 @@
+{
+  "name": "safetrek-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/byamba3/SafeTrek-Bot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/byamba3/SafeTrek-Bot/issues"
+  },
+  "homepage": "https://github.com/byamba3/SafeTrek-Bot#readme",
+  "dependencies": {
+    "botbuilder": "^3.15.0",
+    "request": "^2.81.0",
+    "restify": "^5.2.1"
+  }
+}
