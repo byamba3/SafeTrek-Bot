@@ -15,7 +15,8 @@ An Azure chat bot that makes REST API calls with SafeTrek. Optimized to work wit
 ## Usage
 Log into your Cortana app with the same Microsoft account. Say "Ask `invocation name`", to launch the app. You can also directly say things like: "Ask `invocation name` to help", or "Ask `invocation name` to change address". 
 
-
+## Google Maps Geocode API
+Google Maps Geocode API is used to convert a user's address entry into a more properly formatted address, and longitude/latitude numbers. This API also does spell checking and best estimation for us. Google offers us with 2,500 free requests per day for free. This means 2,500 address changes can be requested per day by SafeTrek users. From there on, it's $0.50 per 1000 requests. 
 
 
 
