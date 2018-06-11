@@ -1,27 +1,21 @@
-## Use Azure app service editor
+# Safe Trek - Microsoft Azure Bot Service
+An Azure chat bot that makes REST API calls with SafeTrek. Optimized to work with Cortana channel. 
 
-1. make code change in the online editor
+## Setting up
+1. Go to https://portal.azure.com/
+2. `Create a resource` -> `AI + Machine Learning` + `Web App Bot` 
+3. Fill out the form, and set `Bot template` to Basic Node.js
+4. Wait few minutes for the app to get deployed. Once deployed open it
+5. Go to `Build` -> `Open online source editor`
+6. Once inside, replace `app.js` and `package.json` with the one in this repository
+7. Now go back to the previous page and go to `Channels`
+8. Click on **Cortana** under `Add a featured channel`
+9. Fill out the form with your OAuth 2.0 information. Redirect URL must be: `https://www.bing.com/agents/oauth`
 
-Your code changes go live as the code changes are saved.
+## Usage
+Log into your Cortana app with the same Microsoft account. Say "Ask `invocation name`", to launch the app. You can also directly say things like: "Ask `invocation name` to help", or "Ask `invocation name` to change address". 
 
-## Use Visual Studio Code
 
-### Build and debug
-1. download source code zip and extract source in local folder
-2. open the source folder in  Visual Studio Code
-3. make code changes
-4. download and run [botframework-emulator](https://emulator.botframework.com/)
-5. connect the emulator to http://localhost:3987
-
-### Publish back
-
-```
-npm run azure-publish
-```
-
-## Use continuous integration
-
-If you have setup continuous integration, then your bot will automatically deployed when new changes are pushed to the source repository.
 
 
 
