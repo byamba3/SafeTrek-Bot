@@ -78,7 +78,11 @@ bot.dialog('ensureProfile', [
     function (session, args, next) {
         session.dialogData.profile = args || {}; // Set the profile or create the object.
         if (!session.dialogData.profile.name) {
-            builder.Prompts.text(session, "What's your name?");
+            builder.Prompts.text(session, 'What\'s your name?', {                                    
+                speak: 'What\'s your name?',                                               
+                retrySpeak: 'Please state your name.',  
+                inputHint: builder.InputHint.expectingInput                                              
+            });
         } else {
             next(); // Skip if we already have this info.
         }
@@ -107,7 +111,8 @@ bot.dialog('ensureProfile', [
 // Gets the type of service the user needs
 bot.dialog('getServices', [
     function (session, args) {
-        builder.Prompts.choice(session, "Which service do you need?", "police|medical|fire", { listStyle: builder.ListStyle.button });
+        builder.Prompts.choice(session, "Which service do you need?", "police|medical|fire", { speak: "Which service do you need? Police, medical or fire?",
+            retrySpeak: 'I did not catch that. Please say it again.', listStyle: builder.ListStyle.button });
     },
     function (session, results) {
         if (results.response) {
@@ -128,7 +133,9 @@ bot.dialog('getServices', [
 // args.alarm_id - the id of the alarm
 bot.dialog('getAlarmStatus', 
     function (session, args) {
+        console.log('I am in getAlarmStatus');
         var AuthCombined = 'Bearer ' + tokenEntity.token;
+        console.log("My auth is: " + AuthCombined);
         var url = 'https://api-sandbox.safetrek.io/v1/alarms/' + args.alarm_id + '/status';
         request.get(
             {
@@ -141,6 +148,8 @@ bot.dialog('getAlarmStatus',
                 console.log('Alarm ID:', args.alarm_id);
                 console.log('I am in getAlarmStatus');
                 console.log('Status:', res.statusCode);
+                session.endConversation();
+                return;
             } else {
                 var bodyObj = JSON.parse(body);
                 session.endDialogWithResult( {response: bodyObj['status']});
@@ -156,6 +165,7 @@ bot.dialog('getAlarmStatus',
 bot.dialog('postHelp', [
     function (session, args) {
         var AuthCombined = 'Bearer ' + tokenEntity.token;
+        console.log("My combined auth token:" + AuthCombined);
         request.post({
             headers: { 'content-type': 'application/json', 'Authorization': AuthCombined},
             url: 'https://api-sandbox.safetrek.io/v1/alarms',
@@ -168,15 +178,17 @@ bot.dialog('postHelp', [
                 }
             })
         }, function (error, response, body) {
+                console.log("I am in response function of postHelp");
                 if (response.statusCode === 401) {
-                // Access token isn't valid, present the oauth flow again
-                var msg = new builder.Message(session)
-                    .addAttachment({
-                        contentType: 'application/vnd.microsoft.card.oauth',
-                        content: {}
-                    });
-                session.endConversation(msg);
-                return;
+                    // Access token isn't valid, present the oauth flow again
+                    console.log("I got 401 error in postHelp");
+                    var msg = new builder.Message(session)
+                        .addAttachment({
+                            contentType: 'application/vnd.microsoft.card.oauth',
+                            content: {}
+                        });
+                    session.endConversation(msg);
+                    return;
                 }
 
                 if (error || response.statusCode !== 201) {
@@ -209,7 +221,7 @@ bot.dialog('alarmDialog',
 // args.prompt - Custom prompt used to ask the user for their password
 bot.dialog('getAddress', [
     function (session, args) {
-        builder.Prompts.text(session, args.prompt);
+        builder.Prompts.text(session, args.prompt, {speak: args.prompt});
     },
     function (session, results, next){
         if (results.response) {
@@ -225,7 +237,7 @@ bot.dialog('getAddress', [
                         session.endDialogWithResult( {response: {formatted_address: bodyObj['results'][0]['formatted_address'], 
                         lat : bodyObj['results'][0]['geometry']['location']['lat'], lng : bodyObj['results'][0]['geometry']['location']['lng']}});
                     } else{
-                        session.send("Invalid address entered.");
+                        session.say("Invalid address entered.", "Invalid address entered");
                         session.endDialog();
                     }
 
@@ -306,35 +318,42 @@ bot.dialog('helpDialog', [
             session.endDialog();
         }
     }
-]).triggerAction({ matches: /^help me$/i });
+]).triggerAction({ matches: /^.*help.*$/i });
 
 bot.dialog('updateLocationDialog', [
-    function (session, next){
+    function (session, results, next){
+        console.log("I was called in updateLocationDialog");
         if(session.userData.profile && session.userData.profile.alarm_id){
+            console.log("alarm id exists");
             session.beginDialog('getAlarmStatus', {alarm_id: session.userData.profile.alarm_id});
         } else{
+            console.log("alarm id doesn't exist");
             next();
         }
     },
     function (session, results){
+        console.log("I am called in 2nd function");
         if(results.response){
            if(results.response == "ACTIVE"){
+               console.log("Alarm is active");
                session.userData.profile.alarm_status = "ACTIVE";
                session.beginDialog("getAddress", {prompt: ADDRESS_PROMPT_DURING_ALARM});
-           } else{
-               session.beginDialog("getAddress", {prompt: ADDRESS_PROMPT});
            }
+        }
+        else{
+               console.log("Alarm is not active");
+               session.beginDialog("getAddress", {prompt: ADDRESS_PROMPT});
         }
     },
     function (session, results) {
         if (results.response) {
-            if( session.userData.profile &&  session.userData.profile.alarm_status == "ACTIVE"){
+            if( session.userData.profile && session.userData.profile.alarm_status == "ACTIVE"){
                 session.beginDialog("postUpdatedAlarmLocation", {lat: results.response.lat, lng : results.response.lng, alarm_id : session.userData.profile.alarm_id});
             } else{
                 session.userData.profile.formatted_address = results.response.formatted_address;
                 session.userData.profile.lat = results.response.lat;
                 session.userData.profile.lng = results.response.lng;
-                session.send("Location set to: " + session.userData.profile.formatted_address);
+                session.say("Location set to: " + session.userData.profile.formatted_address, "Location set.");
                 session.endDialogWithResult( {response: results.response} );
             }
         } else{
