@@ -202,9 +202,7 @@ bot.dialog('postHelp', [
                 var bodyObj = JSON.parse(body);
                 session.userData.profile.alarm_id = bodyObj['id'];
                 
-                session.say('We are now sending help!', 'We are now sending help!', {
-                    inputHint: builder.InputHint.ignoringInput
-                }).endDialog();
+                session.say('We are now sending help!', 'We are now sending help!').endDialog();
             });
         }
 ]);
@@ -291,9 +289,7 @@ bot.dialog('postUpdatedAlarmLocation',
                     return;
                 }
                 
-                session.say('Alarm location updated!', 'I updated your alarm location!', {
-                    inputHint: builder.InputHint.ignoringInput
-                }).endDialog();
+                session.say('Alarm location updated!', 'I updated your alarm location!').endDialog();
             });
     }
 );
@@ -363,13 +359,21 @@ bot.dialog('updateLocationDialog', [
 ]).triggerAction({ matches: /^(change|alter|modify|revise|replace|update).*(location|address)/i });
 
 bot.dialog('postCancelHelp', [
-    function (session, args) {
+     function (session) {
+            var prompt = "Please state your Pin code!";
+            builder.Prompts.text(session, prompt, {speak: prompt});
+     },
+    function (session, results) {
+        if (!results.response) {
+            session.endDialog("Alarm cancel failed.");
+        }
         var AuthCombined = 'Bearer ' + tokenEntity.token;
-        request.post({
+        request.put({
             headers: { 'content-type': 'application/json', 'Authorization': AuthCombined},
-            url: 'https://api.safetrek.io/v1/alarms/' + session.userData.profile.alarm_id + '/status',
+            url: 'https://api-sandbox.safetrek.io/v1/alarms/' + session.userData.profile.alarm_id + '/status',
             body: JSON.stringify({
-                "status": "CANCELED"
+                "status": "CANCELED",
+                "pin": results.response
             })
         }, function (error, response, body) {
                 if (body.code === 400) {
@@ -401,9 +405,7 @@ bot.dialog('postCancelHelp', [
                     return;
                 }
 
-                session.say('Alarm cancelled!', 'Your alarm has been cancelled!', {
-                    inputHint: builder.InputHint.ignoringInput
-                }).endDialog();
+                session.say('Alarm cancelled!', 'Your alarm has been cancelled!');
             });
         }
 ]).triggerAction({ matches: /^(cancel|halt|stop).*(alarm|help|request)/i });
