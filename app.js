@@ -193,7 +193,7 @@ bot.dialog('postHelp', [
 
                 if (error || response.statusCode !== 201) {
                     // API call failed, present an error
-                    session.say('Failed to connect to Safe Trek', 'Sorry, we encountered an error! Please try again!', {
+                    session.say('Failed to connect to Noonlight', 'Sorry, we encountered an error! Please try again!', {
                         inputHint: builder.InputHint.ignoringInput
                     }).endConversation();
                     return;
@@ -283,7 +283,7 @@ bot.dialog('postUpdatedAlarmLocation',
                     console.log('Alarm ID:', args.alarm_id);
                     console.log('I am in postUpdatedAlarmLocation');
                     console.log('Status:', response.statusCode);
-                    session.say('Failed to connect to SafeTrek', 'Sorry, we encountered an error! Please try again!', {
+                    session.say('Failed to connect to Noonlight', 'Sorry, we encountered an error! Please try again!', {
                         inputHint: builder.InputHint.ignoringInput
                     }).endConversation();
                     return;
@@ -399,7 +399,7 @@ bot.dialog('postCancelHelp', [
                     console.log('response: ', response);
                     console.log('body: ', body);
                     console.log('Status:', response.statusCode);
-                    session.say('Failed to connect to Safe Trek', 'Sorry, we encountered an error! Please try again!', {
+                    session.say('Failed to connect to Noonlight', 'Sorry, we encountered an error! Please try again!', {
                         inputHint: builder.InputHint.ignoringInput
                     }).endConversation();
                     return;
