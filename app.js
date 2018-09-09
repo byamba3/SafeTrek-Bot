@@ -298,10 +298,36 @@ bot.dialog('postUpdatedAlarmLocation',
 
 bot.dialog('helpDialog', [
     function (session, results, next) {
+        tokenEntity = session.message.entities.find((e) => {
+            return e.type === 'AuthorizationToken';
+        });
+    
+        // If the token doesn't exist, then this is a non-Cortana channel
+        if (!tokenEntity) {
+            // Send message that info is not available
+            session.say('Failed to get info', 'Sorry, I couldn\'t get your info. Try again later on Cortana.', {
+                inputHint: builder.InputHint.ignoringInput
+            }).endConversation();  
+            return;
+        }
+            
         if (!session.userData.profile) {
-            session.beginDialog('updateLocationDialog');
+            session.beginDialog("getAddress", {prompt: ADDRESS_PROMPT});
         } else {
             next(); // Skip if we already have this info.
+        }
+    },
+    function (session, results, next) {
+        if (session.userData.profile) {
+            next();
+        } else if (results.response) {
+            session.userData.profile = {};
+            session.userData.profile.formatted_address = results.response.formatted_address;
+            session.userData.profile.lat = results.response.lat;
+            session.userData.profile.lng = results.response.lng;
+            next();
+        } else{
+            session.endDialog("Error getting location.");
         }
     },
     function (session, next) {
@@ -359,23 +385,19 @@ bot.dialog('updateLocationDialog', [
 ]).triggerAction({ matches: /^(change|alter|modify|revise|replace|update).*(location|address)/i });
 
 bot.dialog('postCancelHelp', [
-     function (session) {
-            var prompt = "Please state your Pin code!";
-            builder.Prompts.text(session, prompt, {speak: prompt});
-     },
     function (session, results) {
-        if (!results.response) {
-            session.endDialog("Alarm cancel failed.");
-        }
         var AuthCombined = 'Bearer ' + tokenEntity.token;
         request.put({
             headers: { 'content-type': 'application/json', 'Authorization': AuthCombined},
             url: 'https://api-sandbox.safetrek.io/v1/alarms/' + session.userData.profile.alarm_id + '/status',
             body: JSON.stringify({
-                "status": "CANCELED",
-                "pin": results.response
+                "status": "CANCELED"
             })
         }, function (error, response, body) {
+            
+                console.log('StatusDesc:', response.details);
+                console.log('StatusDesc1:', body.details);
+                
                 if (body.code === 400) {
                     session.say(body.details, body.details, {
                         inputHint: builder.InputHint.ignoringInput
@@ -384,13 +406,13 @@ bot.dialog('postCancelHelp', [
                 
                 if (response.statusCode === 400) {
                 // Access token isn't valid, present the oauth flow again
-                var msg = new builder.Message(session)
-                    .addAttachment({
-                        contentType: 'application/vnd.microsoft.card.oauth',
-                        content: {}
-                    });
-                session.endConversation(msg);
-                return;
+                    var msg = new builder.Message(session)
+                        .addAttachment({
+                            contentType: 'application/vnd.microsoft.card.oauth',
+                            content: {}
+                        });
+                    session.endConversation(msg);
+                    return;
                 }
 
                 if (error || response.statusCode !== 200) {
@@ -404,6 +426,7 @@ bot.dialog('postCancelHelp', [
                     }).endConversation();
                     return;
                 }
+               
 
                 session.say('Alarm cancelled!', 'Your alarm has been cancelled!');
             });
